@@ -291,6 +291,15 @@ async function loadCredentialsAndRunServer() {
   const credentials = JSON.parse(fs.readFileSync(credentialsPath, "utf-8"));
   const auth = new google.auth.OAuth2();
   auth.setCredentials(credentials);
+
+  auth.on("tokens", (tokens) => {
+    if (tokens.refresh_token) credentials.refresh_token = tokens.refresh_token;
+    if (tokens.access_token) credentials.access_token = tokens.access_token;
+    if (tokens.expiry_date) credentials.expiry_date = tokens.expiry_date;
+    fs.writeFileSync(credentialsPath, JSON.stringify(credentials));
+    console.error("[gtasks-mcp] Credentials refreshed and saved.");
+  });
+
   google.options({ auth });
 
   const transport = new StdioServerTransport();
