@@ -288,8 +288,18 @@ async function loadCredentialsAndRunServer() {
     process.exit(1);
   }
 
+  const oauthKeyPath = path.join(
+    path.dirname(new URL(import.meta.url).pathname),
+    "../gcp-oauth.keys.json",
+  );
+  const oauthKeys = JSON.parse(fs.readFileSync(oauthKeyPath, "utf-8")).installed;
+
   const credentials = JSON.parse(fs.readFileSync(credentialsPath, "utf-8"));
-  const auth = new google.auth.OAuth2();
+  const auth = new google.auth.OAuth2(
+    oauthKeys.client_id,
+    oauthKeys.client_secret,
+    oauthKeys.redirect_uris[0],
+  );
   auth.setCredentials(credentials);
 
   auth.on("tokens", (tokens) => {
